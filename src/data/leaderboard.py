@@ -20,14 +20,21 @@ class Leaderboard:
     SUBMITTED_DATETIME: str = "Submitted"
 
     _LEADERBOARD_PATH: str = "leaderboard.csv"
+    _ENCODING: str = "utf-8"
 
     def __init__(self, dir: str) -> None:
         self.data: dict = None
-        self._read(dir)
+        self.dir: str = dir
+        self._read()
 
-    def _read(self, dir: str) -> None:
-        with open('/'.join([dir, self._LEADERBOARD_PATH]), 'r', encoding="utf-8") as f:
+    def _read(self) -> None:
+        with open(self._file_path(), 'r', encoding=self._ENCODING) as f:
             self.data = list(csv.DictReader(f))
 
-    def add_run(self, dir: str, data: dict) -> None:
-        pass
+    def add_run(self, data: dict) -> None:
+        with open(self._file_path(), 'a', encoding=self._ENCODING, newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=data.keys())
+            writer.writerow(data)
+ 
+    def _file_path(self) -> str:
+        return '/'.join([self.dir, self._LEADERBOARD_PATH])

@@ -2,6 +2,8 @@ from tkinter import BooleanVar, Button, Canvas, Checkbutton, Entry, Frame, Label
 from tkinter.ttk import Combobox
 from data.game_settings import GameSettings
 from data.leaderboard import Leaderboard
+from data.submission import SubmissionData
+from ui.time_input import DateInput, TimeInput
 
 class SubmitCanvas(Canvas):
     _PAD: int = 10
@@ -19,8 +21,21 @@ class SubmitCanvas(Canvas):
         self._common_canvas: Canvas = Canvas(self)
         self._show_full_game: BooleanVar = BooleanVar(self, True)
         self._verified_status = StringVar(parent, "verified")
+        self._use_emulator: BooleanVar = BooleanVar(self, False)
         self._lrt_frame: Frame = None
         self._lrt_row: int = 0
+        self._full_game_category_select: Combobox = None
+        self._level_category_select: Combobox = None
+        self._level_select: Combobox = None
+        self._real_time_input: TimeInput = None
+        self._lrt_input: TimeInput = None
+        self._date_input: DateInput = None
+        self._video_input: Entry = None
+        self._src_input: Entry = None
+        self._player_input: Entry = None
+        self._region_select: Combobox = None
+        self._platform_select: Combobox = None
+        self._description_input: Text = None
 
     def set_game(self, game: str) -> None:
         self._current_settings = GameSettings.read(self._game_dir(game))
@@ -41,31 +56,31 @@ class SubmitCanvas(Canvas):
         # LRT on its own frame so it can be hidden
         self._lrt_frame = Frame(self._common_canvas)
         lrt_label: Label = Label(self._lrt_frame, text="Load Removed Time")
-        lrt_input: Frame = self._create_time_input(self._lrt_frame)
+        self._lrt_input: TimeInput = TimeInput(self._lrt_frame)
         lrt_label.grid(column=0, row=0, columnspan=2, padx=self._PAD, pady=self._PAD)
-        lrt_input.grid(column=2, row=0, columnspan=2, padx=self._PAD)
+        self._lrt_input.grid(column=2, row=0, columnspan=2, padx=self._PAD)
         # Common submit widgets between full game and level runs
         real_time_frame: Frame = Frame(self._common_canvas)
         real_time_label: Label = Label(real_time_frame, text="Real Time")
-        real_time_input: Frame = self._create_time_input(real_time_frame)
+        self._real_time_input: TimeInput = TimeInput(real_time_frame)
         real_time_label.grid(column=0, row=0, columnspan=2, padx=self._PAD, pady=self._PAD)
-        real_time_input.grid(column=2, row=0, columnspan=2, padx=self._PAD)
+        self._real_time_input.grid(column=2, row=0, columnspan=2, padx=self._PAD)
         date_label: Label = Label(self._common_canvas, text="Date Performed")
-        date_input: Frame = self._create_date_input(self._common_canvas)
+        self._date_input: DateInput = DateInput(self._common_canvas)
         video_label: Label = Label(self._common_canvas, text="Video URL")
-        video_input: Entry = Entry(self._common_canvas)
+        self._video_input: Entry = Entry(self._common_canvas)
         src_label: Label = Label(self._common_canvas, text="Speedrun.com URL")
-        src_input: Label = Entry(self._common_canvas)
+        self._src_input: Entry = Entry(self._common_canvas)
         player_label: Label = Label(self._common_canvas, text="Player")
-        player_input: Entry = Entry(self._common_canvas)
+        self._player_input: Entry = Entry(self._common_canvas)
         region_label: Label = Label(self._common_canvas, text="Region")
-        region_select: Combobox = Combobox(self._common_canvas, values=self._current_settings.regions)
+        self._region_select: Combobox = Combobox(self._common_canvas, values=self._current_settings.regions)
         platform_label: Label = Label(self._common_canvas, text="Platform")
-        platform_select: Combobox = Combobox(self._common_canvas, values=self._current_settings.platforms)
+        self._platform_select: Combobox = Combobox(self._common_canvas, values=self._current_settings.platforms)
         emulator_label: Label = Label(self._common_canvas, text="Emulator")
-        emulator_checkbox: Checkbutton = Checkbutton(self._common_canvas)
+        emulator_checkbox: Checkbutton = Checkbutton(self._common_canvas, variable=self._use_emulator)
         description_label: Label = Label(self._common_canvas, text="Description")
-        description_input: Label = Text(self._common_canvas, width=self._DESCRIPTION_WIDTH, height=self._DESCRIPTION_HEIGHT)
+        self._description_input: Text = Text(self._common_canvas, width=self._DESCRIPTION_WIDTH, height=self._DESCRIPTION_HEIGHT)
         status_label: Label = Label(self._common_canvas, text="Verification Status")
         verified_button: Radiobutton = Radiobutton(self._common_canvas, text="Verified", variable=self._verified_status, value="verified")
         rejected_button: Radiobutton = Radiobutton(self._common_canvas, text="Rejected", variable=self._verified_status, value="rejected")
@@ -77,26 +92,26 @@ class SubmitCanvas(Canvas):
         self._toggle_lrt()
         current_row += 1
         date_label.grid(column=0, row=current_row, columnspan=2, padx=self._PAD, pady=self._PAD)
-        date_input.grid(column=2, row=current_row, columnspan=2, padx=self._PAD)
+        self._date_input.grid(column=2, row=current_row, columnspan=2, padx=self._PAD)
         current_row += 1
         video_label.grid(column=0, row=current_row, columnspan=2, padx=self._PAD, pady=self._PAD)
-        video_input.grid(column=2, row=current_row, columnspan=2, padx=self._PAD)
+        self._video_input.grid(column=2, row=current_row, columnspan=2, padx=self._PAD)
         current_row += 1
         src_label.grid(column=0, row=current_row, columnspan=2, padx=self._PAD)
-        src_input.grid(column=2, row=current_row, columnspan=2, padx=self._PAD)
+        self._src_input.grid(column=2, row=current_row, columnspan=2, padx=self._PAD)
         current_row += 1
         player_label.grid(column=0, row=current_row, padx=self._PAD, pady=self._PAD)
-        player_input.grid(column=1, row=current_row, padx=self._PAD)
+        self._player_input.grid(column=1, row=current_row, padx=self._PAD)
         region_label.grid(column=2, row=current_row, padx=self._PAD)
-        region_select.grid(column=3, row=current_row, padx=self._PAD)
+        self._region_select.grid(column=3, row=current_row, padx=self._PAD)
         current_row += 1
         platform_label.grid(column=0, row=current_row, padx=self._PAD, pady=self._PAD)
-        platform_select.grid(column=1, row=current_row, padx=self._PAD)
+        self._platform_select.grid(column=1, row=current_row, padx=self._PAD)
         emulator_label.grid(column=2, row=current_row, padx=self._PAD)
         emulator_checkbox.grid(column=3, row=current_row, padx=self._PAD)
         current_row += 1
         description_label.grid(column=0, row=current_row, columnspan=2, padx=self._PAD, pady=self._PAD)
-        description_input.grid(column=2, row=current_row, columnspan=2, padx=self._PAD)
+        self._description_input.grid(column=2, row=current_row, columnspan=2, padx=self._PAD)
         current_row += 1
         status_label.grid(column=0, row=current_row, columnspan=2, padx=self._PAD, pady=self._PAD)
         verified_button.grid(column=2, row=current_row, padx=self._PAD)
@@ -109,53 +124,19 @@ class SubmitCanvas(Canvas):
         
     def _create_ui_full_game(self) -> None:
         category_label: Label = Label(self._full_game_submit_canvas, text="Category")
-        category_select: Combobox = Combobox(self._full_game_submit_canvas, values=self._current_settings.full_game_categories)
+        self._full_game_category_select: Combobox = Combobox(self._full_game_submit_canvas, values=self._current_settings.full_game_categories)
         category_label.grid(column=0, row=0, padx=self._PAD, pady=self._PAD)
-        category_select.grid(column=1, row=0, padx=self._PAD)
+        self._full_game_category_select.grid(column=1, row=0, padx=self._PAD)
 
     def _create_ui_level(self) -> None:
         category_label: Label = Label(self._level_submit_canvas, text="Category")
-        category_select: Combobox = Combobox(self._level_submit_canvas, values=self._current_settings.level_categories)
+        self._level_category_select: Combobox = Combobox(self._level_submit_canvas, values=self._current_settings.level_categories)
         level_label: Label = Label(self._level_submit_canvas, text="Level")
-        level_select: Combobox = Combobox(self._level_submit_canvas, values=self._current_settings.levels)
+        self._level_select: Combobox = Combobox(self._level_submit_canvas, values=self._current_settings.levels)
         category_label.grid(column=0, row=0, padx=self._PAD, pady=self._PAD)
-        category_select.grid(column=1, row=0, padx=self._PAD)
+        self._level_category_select.grid(column=1, row=0, padx=self._PAD)
         level_label.grid(column=2, row=0, padx=self._PAD)
-        level_select.grid(column=3, row=0, padx=self._PAD)
-
-    def _create_time_input(self, parent: Frame) -> Frame:
-        frame: Frame = Frame(parent)
-        minutes_separator: Label = Label(frame, text=":")
-        seconds_separator: Label = Label(frame, text=":")
-        millis_separator: Label = Label(frame, text=".")
-        hour_input: Entry = Entry(frame, width=self._TIME_INPUT_WIDTH)
-        minute_input: Entry = Entry(frame, width=self._TIME_INPUT_WIDTH)
-        second_input: Entry = Entry(frame, width=self._TIME_INPUT_WIDTH)
-        millis_input: Entry = Entry(frame, width=self._TIME_INPUT_WIDTH)
-        hour_input.grid(column=0, row=0)
-        minutes_separator.grid(column=1, row=0)
-        minute_input.grid(column=2, row=0)
-        seconds_separator.grid(column=3, row=0)
-        second_input.grid(column=4, row=0)
-        millis_separator.grid(column=5, row=0)
-        millis_input.grid(column=6, row=0)
-        return frame
-
-    def _create_date_input(self, parent: Canvas) -> Frame:
-        frame: Frame = Frame(parent)
-        year_label: Label = Label(frame, text="Year")
-        month_label: Label = Label(frame, text="Month")
-        day_label: Label = Label(frame, text="Day")
-        year_input: Entry = Entry(frame, width=self._TIME_INPUT_WIDTH)
-        month_input: Entry = Entry(frame, width=self._TIME_INPUT_WIDTH)
-        day_input: Entry = Entry(frame, width=self._TIME_INPUT_WIDTH)
-        year_label.grid(column=0, row=0)
-        year_input.grid(column=1, row=0, padx=self._PAD)
-        month_label.grid(column=2, row=0)
-        month_input.grid(column=3, row=0, padx=self._PAD)
-        day_label.grid(column=4, row=0)
-        day_input.grid(column=5, row=0)
-        return frame
+        self._level_select.grid(column=3, row=0, padx=self._PAD)
 
     def _toggle_submit_mode(self) -> None:
         self._common_canvas.pack_forget()
@@ -175,7 +156,26 @@ class SubmitCanvas(Canvas):
             self._lrt_frame.grid_forget()
 
     def _submit(self) -> None:
-        pass
+        submission_data: SubmissionData = SubmissionData(
+            self._verified_status.get(),
+            self._full_game_category_select.get() if self._show_full_game.get() else self._level_category_select.get(),
+            self._level_select.get() if not self._show_full_game.get() else None,
+            "",
+            self._player_input.get(),
+            self._real_time_input.get(),
+            self._lrt_input.get() if self._current_settings.use_lrt and self._show_full_game.get() else None,
+            self._date_input.get(),
+            self._platform_select.get(),
+            self._use_emulator.get(),
+            self._region_select.get(),
+            self._video_input.get(),
+            self._description_input.get("1.0", "end-1c"),
+            self._src_input.get()
+        )
+        if submission_data.validate(self._show_full_game.get(), self._current_settings):
+            self._current_leaderboard.add_run(submission_data.to_dict(self._current_settings))
+        else:
+            print("INVALID")
 
     def _game_dir(self, game: str) -> str:
         return '/'.join([self._archive_dir, game])
