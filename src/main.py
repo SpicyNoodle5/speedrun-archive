@@ -5,7 +5,7 @@ from ui.submit_canvas import SubmitCanvas
 class Main:
     _ARCHIVE_DIR: str = "archive"
     _WINDOW_WIDTH: int = 800
-    _WINDOW_HEIGHT: int = 600
+    _WINDOW_HEIGHT: int = 800
 
     def __init__(self) -> None:
         self._window = Tk()

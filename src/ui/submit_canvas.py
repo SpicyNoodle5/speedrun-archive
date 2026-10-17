@@ -3,11 +3,11 @@ from tkinter.ttk import Combobox
 from data.game_settings import GameSettings
 from data.leaderboard import Leaderboard
 from data.submission import SubmissionData
+from ui.subcategory_input import SubcategoryFrame
 from ui.time_input import DateInput, TimeInput
 
 class SubmitCanvas(Canvas):
     _PAD: int = 10
-    _TIME_INPUT_WIDTH: int = 5
     _DESCRIPTION_WIDTH: int = 30
     _DESCRIPTION_HEIGHT: int = 5
 
@@ -19,6 +19,7 @@ class SubmitCanvas(Canvas):
         self._full_game_submit_canvas: Canvas = Canvas(self)
         self._level_submit_canvas: Canvas = Canvas(self)
         self._common_canvas: Canvas = Canvas(self)
+        self._status_canvas: Canvas = Canvas(self)
         self._show_full_game: BooleanVar = BooleanVar(self, True)
         self._verified_status = StringVar(parent, "verified")
         self._use_emulator: BooleanVar = BooleanVar(self, False)
@@ -27,6 +28,7 @@ class SubmitCanvas(Canvas):
         self._full_game_category_select: Combobox = None
         self._level_category_select: Combobox = None
         self._level_select: Combobox = None
+        self._subcategory_frame: SubcategoryFrame = None
         self._real_time_input: TimeInput = None
         self._lrt_input: TimeInput = None
         self._date_input: DateInput = None
@@ -36,10 +38,12 @@ class SubmitCanvas(Canvas):
         self._region_select: Combobox = None
         self._platform_select: Combobox = None
         self._description_input: Text = None
+        self._status_label: Label = None
 
     def set_game(self, game: str) -> None:
         self._current_settings = GameSettings.read(self._game_dir(game))
         self._current_leaderboard = Leaderboard(self._game_dir(game))
+        self._current_settings.sort()
         self._create_ui(game)
 
     def _create_ui(self, game: str):
@@ -60,6 +64,7 @@ class SubmitCanvas(Canvas):
         lrt_label.grid(column=0, row=0, columnspan=2, padx=self._PAD, pady=self._PAD)
         self._lrt_input.grid(column=2, row=0, columnspan=2, padx=self._PAD)
         # Common submit widgets between full game and level runs
+        self._subcategory_frame: SubcategoryFrame = SubcategoryFrame(self._common_canvas, self._current_settings)
         real_time_frame: Frame = Frame(self._common_canvas)
         real_time_label: Label = Label(real_time_frame, text="Real Time")
         self._real_time_input: TimeInput = TimeInput(real_time_frame)
@@ -85,7 +90,10 @@ class SubmitCanvas(Canvas):
         verified_button: Radiobutton = Radiobutton(self._common_canvas, text="Verified", variable=self._verified_status, value="verified")
         rejected_button: Radiobutton = Radiobutton(self._common_canvas, text="Rejected", variable=self._verified_status, value="rejected")
         submit_button: Button = Button(self._common_canvas, text="Submit", command=lambda: self._submit())
+        # Place widgets
         current_row: int = 0
+        self._subcategory_frame.grid(column=0, row=current_row, columnspan=4)
+        current_row += 1
         real_time_frame.grid(column=0, row=current_row, columnspan=4)
         current_row += 1
         self._lrt_row = current_row
@@ -160,7 +168,7 @@ class SubmitCanvas(Canvas):
             self._verified_status.get(),
             self._full_game_category_select.get() if self._show_full_game.get() else self._level_category_select.get(),
             self._level_select.get() if not self._show_full_game.get() else None,
-            "",
+            self._subcategory_frame.get(),
             self._player_input.get(),
             self._real_time_input.get(),
             self._lrt_input.get() if self._current_settings.use_lrt and self._show_full_game.get() else None,
@@ -172,10 +180,15 @@ class SubmitCanvas(Canvas):
             self._description_input.get("1.0", "end-1c"),
             self._src_input.get()
         )
+        if self._status_label is not None:
+            self._status_label.pack_forget()
         if submission_data.validate(self._show_full_game.get(), self._current_settings):
             self._current_leaderboard.add_run(submission_data.to_dict(self._current_settings))
+            self._status_label = Label(self._status_canvas, text="Run submitted!")
         else:
-            print("INVALID")
+            self._status_label = Label(self._status_canvas, text="Run data invalid! Please check your input and submit again.")
+        self._status_label.pack()
+        self._status_canvas.pack()
 
     def _game_dir(self, game: str) -> str:
         return '/'.join([self._archive_dir, game])
