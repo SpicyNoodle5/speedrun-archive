@@ -1,0 +1,68 @@
+{
+    "full_game_categories": [
+        "Any% No Shell RNG",
+        "Softlock",
+        "2x Any%",
+        "Maximum Lives",
+        "All Autoscrollers",
+        "Reverse Level Order",
+        "Any% No World 5",
+        "1 Warp",
+        "Fireworks%",
+        "All Short Categories",
+        "Out of Bounds",
+        "Wrong Warp\u2122\ufe0f",
+        "Versus Mode Win",
+        "All Towers",
+        "Walkathon",
+        "Yump",
+        "rkllnewk",
+        "No Powerups Cannonless",
+        "1P Minigames RTA",
+        "Cannonfull",
+        "All Red Coins",
+        "All Powerups",
+        "Arctic Fox",
+        "OneHand",
+        "Wallpaper%",
+        "Any% Blindfolded"
+    ],
+    "level_categories": [],
+    "levels": [],
+    "regions": [
+        "USA / NTSC",
+        "JPN / NTSC",
+        "EUR / PAL",
+        "KOR / NTSC"
+    ],
+    "platforms": [
+        "Nintendo 3DS",
+        "Wii U Virtual Console",
+        "Nintendo DS",
+        "New Nintendo 3DS"
+    ],
+    "use_lrt": true,
+    "subcategories": [
+        {
+            "name": "Player Count",
+            "values": [
+                "Castle",
+                "Pipe",
+                "Snow",
+                "Grass",
+                "All Levels",
+                "Underground"
+            ]
+        },
+        {
+            "name": "Category",
+            "values": [
+                "All Minigames",
+                "Table",
+                "Action",
+                "Puzzle",
+                "Variety"
+            ]
+        }
+    ]
+}
